@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 import io
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # change this to something more secure in production
+app.secret_key = 'your_secret_key'  # Change this to something more secure
 
 # Setup SQLite database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meeting_notes.db'
@@ -17,9 +17,12 @@ class MeetingNote(db.Model):
     title = db.Column(db.String(100))
     content = db.Column(db.Text)
 
-# Simple user credentials (for demo)
-USERNAME = "user"
-PASSWORD = "pass123"
+# ✅ List of allowed email IDs
+ALLOWED_EMAILS = [
+    "Vinod.Vijayan@gds.ey.com",
+    "Ayishath.Rifa@gds.ey.com",
+    "Visakh.S.J@gds.ey.com"
+]
 
 # Home page - show form if logged in
 @app.route('/')
@@ -61,15 +64,16 @@ def download(note_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"{note.title}.pdf", mimetype='application/pdf')
 
-# Login
+# ✅ Login with email only
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if request.form['username'] == USERNAME and request.form['password'] == PASSWORD:
-            session['user'] = USERNAME
+        entered_email = request.form['email'].strip().lower()
+        if entered_email in [email.lower() for email in ALLOWED_EMAILS]:
+            session['user'] = entered_email
             return redirect(url_for('home'))
         else:
-            return render_template('login.html', error='Invalid credentials')
+            return render_template('login.html', error='Access denied. Email not authorized.')
     return render_template('login.html')
 
 # Logout
@@ -82,6 +86,7 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
