@@ -64,16 +64,20 @@ def download(note_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"{note.title}.pdf", mimetype='application/pdf')
 
-# ✅ Login with email only
+# Common password
+COMMON_PASSWORD = "pass123"
+
+# Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        entered_email = request.form['email'].strip().lower()
-        if entered_email in [email.lower() for email in ALLOWED_EMAILS]:
-            session['user'] = entered_email
+        email = request.form['email']
+        password = request.form['password']
+        if email in ALLOWED_EMAILS and password == COMMON_PASSWORD:
+            session['user'] = email
             return redirect(url_for('home'))
         else:
-            return render_template('login.html', error='Access denied. Email not authorized.')
+            return render_template('login.html', error='Invalid email or password')
     return render_template('login.html')
 
 # Logout

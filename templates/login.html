@@ -9,10 +9,12 @@
         <p style="color: red;">{{ error }}</p>
     {% endif %}
     <form method="POST">
-        <label>Email:</label><br>
-        <input type="email" name="email" required><br><br>
+        <label for="email">Enter EY Email</label>
+        <input type="email" name="email" id="email" required>
+    
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" required>
+    
         <button type="submit">Login</button>
     </form>
-</body>
-</html>
-
+    
