@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { color: #002244; }
+        p { margin: 5px 0; }
+        strong { display: inline-block; width: 130px; }
+    </style>
+</head>
+<body>
+    <h2>Meeting Note</h2>
+    <p><strong>Date:</strong> {{ note.date }}</p>
+    <p><strong>Attendees:</strong> {{ note.attendees }}</p>
+    <p><strong>Agenda:</strong><br>{{ note.agenda }}</p>
+    <p><strong>Decisions:</strong><br>{{ note.decisions }}</p>
+    <p><strong>Actions:</strong><br>{{ note.actions }}</p>
+</body>
+</html>

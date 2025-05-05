@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Meeting Notes | EY Team</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>All Meeting Notes</h1>
+        {% for note in notes %}
+        <div class="note-card">
+            <h3>{{ note.date }}</h3>
+            <p><strong>Attendees:</strong> {{ note.attendees }}</p>
+            <p><strong>Agenda:</strong> {{ note.agenda }}</p>
+            <p><strong>Decisions:</strong> {{ note.decisions }}</p>
+            <p><strong>Action Items:</strong> {{ note.actions }}</p>
+            <a href="{{ url_for('download_pdf', note_id=note.id) }}" class="link">📥 Download as PDF</a>
+        </div>
+        {% else %}
+        <p>No meeting notes submitted yet.</p>
+        {% endfor %}
+        <a href="/" class="link">← Back to Form</a>
+    </div>
+</body>
+</html>

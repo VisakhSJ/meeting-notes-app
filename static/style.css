@@ -1,0 +1,78 @@
+body {
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+h1 {
+    font-size: 28px;
+    color: #002244;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+form label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+}
+
+input[type="text"],
+input[type="date"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-bottom: 15px;
+}
+
+button {
+    background-color: #ffc20e;
+    color: #002244;
+    font-weight: bold;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #e6ae00;
+}
+
+.note-card {
+    border-left: 6px solid #002244;
+    background: #fafafa;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+}
+
+.link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: #002244;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
