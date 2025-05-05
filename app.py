@@ -1,96 +1,88 @@
-from flask import Flask, render_template, request, redirect, send_file, url_for
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import os
+import io
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # change this to something more secure in production
 
-# Configure SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notes.db'
+# Setup SQLite database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meeting_notes.db'
 db = SQLAlchemy(app)
 
-# Define the model
+# Define a database model
 class MeetingNote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.String(20))
-    attendees = db.Column(db.Text)
-    agenda = db.Column(db.Text)
-    decisions = db.Column(db.Text)
-    actions = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    title = db.Column(db.String(100))
+    content = db.Column(db.Text)
 
-# Create database (if not already exists)
-with app.app_context():
-    db.create_all()
+# Simple user credentials (for demo)
+USERNAME = "user"
+PASSWORD = "pass123"
 
+# Home page - show form if logged in
 @app.route('/')
 def home():
-    return render_template('home.html')
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    notes = MeetingNote.query.all()
+    return render_template('home.html', notes=notes)
 
-@app.route('/submit', methods=['POST'])
-def submit():
-    new_note = MeetingNote(
-        date=request.form['date'],
-        attendees=request.form['attendees'],
-        agenda=request.form['agenda'],
-        decisions=request.form['decisions'],
-        actions=request.form['actions']
-    )
-    db.session.add(new_note)
+# Save note
+@app.route('/save', methods=['POST'])
+def save():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    title = request.form['title']
+    content = request.form['content']
+    note = MeetingNote(title=title, content=content)
+    db.session.add(note)
     db.session.commit()
-    return redirect('/notes')
+    return redirect(url_for('home'))
 
-@app.route('/notes')
-def notes():
-    all_notes = MeetingNote.query.order_by(MeetingNote.created_at.desc()).all()
-    return render_template('notes.html', notes=all_notes)
-
+# Download note as PDF
 @app.route('/download/<int:note_id>')
-def download_pdf(note_id):
+def download(note_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
     note = MeetingNote.query.get_or_404(note_id)
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    p.setFont("Helvetica", 14)
+    p.drawString(100, 750, f"Title: {note.title}")
+    p.setFont("Helvetica", 12)
+    p.drawString(100, 720, "Content:")
+    y = 700
+    for line in note.content.split('\n'):
+        p.drawString(100, y, line)
+        y -= 20
+    p.save()
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f"{note.title}.pdf", mimetype='application/pdf')
 
-    pdf_path = f"static/note_{note_id}.pdf"
-    c = canvas.Canvas(pdf_path, pagesize=letter)
-    width, height = letter
-    y = height - 50  # Top margin
+# Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if request.form['username'] == USERNAME and request.form['password'] == PASSWORD:
+            session['user'] = USERNAME
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', error='Invalid credentials')
+    return render_template('login.html')
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, "Meeting Note")
-    y -= 30
-
-    c.setFont("Helvetica", 12)
-    c.drawString(50, y, f"Date: {note.date}")
-    y -= 20
-    c.drawString(50, y, f"Attendees: {note.attendees}")
-    y -= 20
-
-    c.drawString(50, y, "Agenda:")
-    y -= 20
-    for line in note.agenda.split('\n'):
-        c.drawString(70, y, line)
-        y -= 15
-
-    y -= 10
-    c.drawString(50, y, "Decisions:")
-    y -= 20
-    for line in note.decisions.split('\n'):
-        c.drawString(70, y, line)
-        y -= 15
-
-    y -= 10
-    c.drawString(50, y, "Action Items:")
-    y -= 20
-    for line in note.actions.split('\n'):
-        c.drawString(70, y, line)
-        y -= 15
-
-    c.save()
-    return send_file(pdf_path, as_attachment=True)
+# Logout
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
-   app.run(debug=True, host='0.0.0.0', port=5000)
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
